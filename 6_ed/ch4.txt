@@ -1,0 +1,116 @@
+4)
+
+Max MBR Value = 0x0FF (8bits)
+NEXT_ADDRESS = 0x1FF
+
+0x000 || 0x1FF = 0x1FF
+0x001 || 0x1FF = 0x1FF
+0x002 || 0x1FF = 0x1FF [...]
+0x0FF || 0x1FF = 0x1FF
+
+No. If NEXT_ADDRESS = 0x1FF, any MBR value will result 0x1FF.
+
+5)
+
+i = j + k;
+if (i == 3)
+    k = 5;
+    k = 0;
+else
+    j = j − 1;
+
+ILOAD j                         // i = j + k 0x15 0x02
+ILOAD k 0x15 0x03
+IADD 0x60
+ISTORE i 0x36 0x01
+ILOAD i                         // if (i == 3) 0x15 0x01
+BIPUSH 3 0x10 0x03
+IF ICMPEQ L1 0x9F 0x00 0x0D
+ILOAD j                         // j = j − 1 0x15 0x02
+BIPUSH 1 0x10 0x01
+ISUB 0x64
+ISTORE j 0x36 0x02
+GOTO L2 0xA7 0x00 0x07
+L1: BIPUSH 0                    // k = 0 0x10 0x00
+ISTORE k 0x36 0x03
+L2:
+
+In a optimized compiler, the new assembly code will be the same, because new statement is overwritten by k = 0;
+
+6) i = k + n + 5
+
+ILOAD k
+ILOAD n
+IADD
+BIPUSH 0x5
+IADD
+ISTORE i
+
+BIPUSH 0x5
+ILOAD n
+ILOAD k
+IADD
+IADD
+ISTORE i
+
+7) 
+
+ILOAD j
+ILOAD n
+ISUB
+BIPUSH 7
+ISUB
+DUP
+IADD
+ISTORE i
+
+STACK:
+
+                        n           7                       j-n-7           
+            j           j           j-n         j-n         i-n-7       j-n-7       2(j*n*7)
+            1           2           3           4           5           6           7           8
+
+i = 2 * (j*n*7);
+
+8)
+
+if (Z) goto L1; else goto L2
+
+No. L2 = 0x140, will imply in a leap of 320 bytes. 
+
+9)
+
+
+
+10)
+
+11)
+
+12)
+
+POP
+
+MAR -> Memory Address Register
+SP -> Stack Pointer
+TOS -> Top of Stack
+MDR -> Memory Data Register
+
+POP:
+
+pop1:   MAR = SP = SP - 1; rd        /// Read in netx-to-top word on stack
+pop2:                                /// Wait for read
+pop3:   TOS = MDR; goto(MBR1)        /// Copy new word to TOS
+
+POPTWO:
+
+poptwo1:    MAR = SP = SP - 1;
+poptwo3:    MAR = SP = SP - 1; rd        /// Read in netx-to-top word on stack
+poptwo4:                                /// Wait for read
+poptwo5:    TOS = MDR; goto(MBR1)        /// Copy new word to TOS
+
+poptwo1:    MAR = SP = SP -1; goto(POP)
+
+14)
+
+a) 
+
