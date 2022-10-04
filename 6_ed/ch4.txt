@@ -202,6 +202,5 @@ ishr2 goto(istore1)
 16. The JVM INVOKEVIRTUAL instruction needs to know how many parameters it has.
 Why?
 
-Because to start the execution of the invoked method, the program counter needs to 
+Because to start the execution of invoked method, the program counter needs to 
 be pointed after method parameters.
-
