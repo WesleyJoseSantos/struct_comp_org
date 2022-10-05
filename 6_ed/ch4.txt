@@ -167,14 +167,17 @@ a. What is the arithmetic operation equivalent to left shift with a count of 2?
 
 0x10000000 = 128
 
-0x10000000 << 2 = 0x1000000000 = 256
+0x10000000 >> 2 = 0x100000 = 64
 
-Double the value.
+half the value
 
 b. Extend the microcode to include this instruction as a part of IJVM.
 
-ishr1 goto(istore1)
-ishr2 goto(istore1)
+ishr1 MAR = SP = SP - 1; read
+ishr2 OPC = TOS
+ishr3 MDR = MDR >> 1
+ishr4 OPC = OPC - 1; if(Z) goto ishr5; else goto ishr3
+ishr5 TOS = MDR; write; goto main1
 
 15. The instruction ISHL (shift left integer) exists in JVM but not in IJVM. It uses the top
 two values on the stack, replacing the two with a single value, the result. The sec-
@@ -188,14 +191,18 @@ a. What is the arithmetic operation equivalent to shifting left with a count of 
 
 0x10000000 = 128
 
-0x10000000 >> 2 = 0x100000 = 64
+0x10000000 << 2 = 0x1000000000 = 256
 
-half the value
+Double the value.
 
 b. Extend the microcode to include this instruction as a part of IJVM.
 
-ishr1 goto(istore1)
-ishr2 goto(istore1)
+ishr1 MAR = SP = SP - 1; read
+ishr2 OPC = TOS
+ishr3 H = MDR
+ishr4 MDR = MDR + H
+ishr5 OPC = OPC - 1; if(Z) goto ishr6; else goto ishr3
+ishr6 TOS = MDR; write; goto main1
 
 16. The JVM INVOKEVIRTUAL instruction needs to know how many parameters it has.
 Why?
