@@ -83,9 +83,7 @@ if (Z) goto L1; else goto L2
 to binary, L2 has to be in the bottom 256 words of the control store. Would it not be
 equally possible to have L1 at, say, 0x40 and L2 at 0x140? Explain your answer.
 
-if (Z) goto L1; else goto L2
-
-No. L2 = 0x140, will imply in a leap of 320 bytes. 
+To do this, it's needed to add an not port in Z pin of ULA. Without this, is not possible.
 
 9. In the microprogram for Mic-1, in if_icmpeq3, MDR is copied to H. A few lines later it
 is subtracted from TOS to check for equality. Surely it is better to have one statement:
