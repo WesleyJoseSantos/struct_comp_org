@@ -150,7 +150,6 @@ poptwo5:    TOS = MDR; goto(MBR1)        /// Copy new word to TOS
 
 poptwo1:    MAR = SP = SP -1; goto(POP)
 
-
 13. On the full JVM machine, there are special 1-byte opcodes for loading locals 0 through
 3 onto the stack instead of using the general ILOAD instruction. How should IJVM be
 modified to make the best use of these instructions?
@@ -207,5 +206,179 @@ ishr6 TOS = MDR; write; goto main1
 16. The JVM INVOKEVIRTUAL instruction needs to know how many parameters it has.
 Why?
 
-Because to start the execution of invoked method, the program counter needs to 
-be pointed after method parameters.
+Because to start the execution of invoked method, the parameters must be passed to stack
+
+17. Implement the JVM DLOAD instruction for the Mic-2. It has a 1-byte index and pushes
+the local variable at this position onto the stack. Then it pushes the next higher word
+onto the stack as well.
+
+dload1 MAR = LV + MBR1U; rd
+dload2 H = MAR + 1
+dload3 MAR = SP = SP + 1; wr
+dload4 MAR = H; rd
+dload5 MAR = SP = SP + 1; wr
+dload6 TOS = MDR; goto (MBR)
+
+18. Draw a finite state machine for tennis scoring. The rules of tennis are as follows. To
+win, you need at least four points and you must have at least two points more than
+your opponent. Start with a state (0, 0) indicating that no one has scored yet. Then
+add a state (1, 0) meaning that A has scored. Label the arc from (0, 0) to (1, 0) with an
+A. Now add a state (0, 1) indicating that B has scored, and label the arc from (0, 0)
+with a B. Continue adding states and arcs until all the possible states have been
+included.
+
+(a,b)
+(0,0)---→(1,0)---→(2,0)---→(3,0)---→(a w)←--------|
+  ↓        ↓        ↓        ↓       ↑ ↑          |
+(0,1)---→(1,1)---→(2,1)---→(3,1)-----| |          |
+  ↓        ↓        ↓        ↓         |          |
+(0,2)---→(1,2)---→(2,2)---→(3,2)-------| |-----(a's ad)
+  ↓        ↓        ↓                  ↓ ↓        ↑
+(0,3)---→(1,3)---→(2,3)-------------→(deuce)------|
+  ↓        ↓        ↓                  ↑ ↑        ↓
+(b w)←---------------------------------| |-----(b's ad)
+   ↑                                              |
+   |----------------------------------------------|
+
+19. Reconsider the previous problem. Are there any states that could be collapsed without
+changing the result of any game? If so, which ones are equivalent?
+
+Yes, deuce and 1,1 and 2,2 are equivalent.
+(2,3) and (3,2) ca be equivalent with (a's ad) and (b's ad)
+
+20. Draw a finite-state machine for branch prediction that is more tenacious than Fig. 4-42.
+It should change only predictions after three consecutive mispredictions.
+
+                           __________________________________________
+                          |                                          ↓ 
+(000)------>(001)------>(011)          (100)<-------(110)<---------(111)
+  ↑___________|___________|              |____________|______________↑
+  |______________________________________|
+
+21. The shift register of Fig. 4-27 has a maximum capacity of 6 bytes. Could a cheaper
+version of the IFU be built with a 5-byte shift register? How about a 4-byte one?
+
+A cheaper version of IFU built with a 5-byte shift registers will work. 
+But a 4-byte version will not work when only 1 byte left in the queue and MBR2 were referenced.
+
+22. Having examined cheaper IFUs in the previous question, now let us examine more ex-
+pensive ones. Would there ever be any point to have a much larger shift register in the
+IU, say, 12 bytes? Why or why not?
+
+Definitely. We have been assuming a 100% cache hit rate so far. That is
+unrealistic. Sometimes a memory fetch will be a cache miss and take a long
+time. Having a large queue of previously fetched bytes will allow the
+machine to continue to run even when a memory reference takes a long time.
+Thus during much of the long memory fetch time the CPU may still be running. 
+With a small shift register in the IFU it may have to stall much earlier
+
+23. In the microprogram for the Mic-2, the code for if icmpeq6 goes to T when Z is set to
+1. However, the code at T is the same as goto1. Would it have been possible to go to
+goto1 directly? Would doing so have made the machine faster?
+
+Remember that due to the way branching works, the true addresses must be
+exactly 0x100 more than the false address. By always pairing T and F, it is
+easy to make sure they are at a distance of 0x100. On the other hand, all the
+conditional branches end up at T if taken and then go to GOTO 1, so if
+GOTO 1 were positioned at exactly 0x100 above F, it would have worked.
+Doing so would have saved 1 word of control store, but it would not have
+made the machine any faster.
+
+24. In the Mic-4, the decoding unit maps the IJVM opcode onto the ROM index where the
+corresponding micro-operations are stored. It would seem to be simpler to just omit
+the decoding stage and feed the IJVM opcode into the queueing directly. It could use
+the IJVM opcode as an index into the ROM, the same way as the Mic-1 works. What
+is wrong with this plan?
+
+The main problem is that the micro-operations have to be in sequence so they
+can be read out efficiently. The IJVM opcode for POP is 0x57, so its
+sequence would have to begin there. The trouble is, this sequence is three
+micro-operations long, so they would go in slots 0x57, 0x58, and 0x59. 
+However, DUP must begin in 0x59, so there is a conflict. In addition, the scheme
+used in the Mic-4 allows the micro-operations to be packed densely. If there
+are k micro-operations in all, then only k table entries are needed. In a
+scheme like the one the Mic-1 has, at least 256 entries are needed.
+
+25. Why are computers equipped with multiple layers of cache? Would it not be better to
+simply have one big one?
+
+Because one of the most effective ways to improve both bandwidth and latency is to
+use multiple caches. A basic technique that works very effectively is to introduce a
+separate cache for instructions and data. There are several benefits from having
+separate caches for instructions and data, often called a split cache.
+
+26. A computer has a two-level cache. Suppose that 60% of the memory references hit on
+the first level cache, 35% hit on the second level, and 5% miss. The access times are 5
+nsec, 15 nsec, and 60 nsec, respectively, where the times for the level 2 cache and
+memory start counting at the moment it is known that they are needed (e.g., a level 2
+cache access does not even start until the level 1 cache miss occurs). What is the aver-
+age access time?
+
+The mean access time is 0.6 × 5 + 0.35 × 20 + 0.05 × 80. This gives 14 nsec.
+
+27. At the end of Sec. 4.5.1, we said that write allocation wins only if there are likely to be
+multiple writes to the same cache line in a row. What about the case of a write follow-
+ed by multiple reads? Would that not also be a big win?
+
+Not really. If the cache is write allocate, then the line will be brought in at
+the time of the write, so subsequent reads are free. If the cache is not write
+allocate, the write will go through to memory, but the first read will bring the
+line in, and the rest of the reads are free. The only gain here is the saving of
+one write through to memory. The downside of write allocate is that if there
+are no subsequent reads, the line will have been brought in for nothing. Thus
+write allocate is a gamble that the line will be written again soon.
+
+28. In the first draft of this book, Fig. 4-39 showed a three-way associative cache instead
+of a four-way associative cache. One of the reviewers threw a temper tantrum, claim-
+ing that students would be horribly confused by this because 3 is not a power of 2 and
+computers do everything in binary. Since the customer is always right, the figure was
+changed to a four-way associative cache. Was the reviewer right? Discuss your
+answer.
+
+The reviewer was wrong. In an n-way associative cache, there is hardware to
+compare all the tags in parallel to the tag portion of the address being looked
+up. It does not matter if there are three, four, or 19 comparisons being done
+in parallel. Many commercial machines have 3-way associative caches.
+
+29. Many computer architects spend a lot of time making their pipelines deeper. Why?
+
+A deeply pipelined CPU, allows the individual steps to be very short and thus 
+the clock frequency high. Many CPUs are designed in essentially this way, especially 
+those that have to implement an older (CISC) instruction set. For example, the Core i7 
+implementation is conceptually similar to the Mic-4 in some ways.
+
+30. A computer with a five-stage pipeline deals with conditional branches by stalling for
+the next three cycles after hitting one. How much does stalling hurt the performance if
+20% of all instructions are conditional branches? Ignore all sources of stalling except
+conditional branches.
+
+A conditional branch ties up the fetch unit for 4 cycles—one fetch and three
+dead cycles after it. The mean number of cycles spent using the fetch unit is
+0.8 × 1 + 0.2 × 4 = 1.6 fetch cycles/instruction. Without this problem it
+would have been 1.0 fetch cycles per instruction. Thus the average instruction takes 60% 
+more time and the machine runs at 1/1.6 or 5/8 of full speed.
+
+31. A computer prefetches up to 20 instructions in advance. However, on the average, four
+of these are conditional branches, each with a probability of 90% of being predicted
+correctly. What is the probability that the prefetching is on the right track?
+
+Prefetching will only be on the right track if all four branches are correctly
+predicted. The chance that this happens is 0.94, which is about 0.66.
+
+32. Suppose that we were to change the design of the machine used in Fig. 4-43 to have 16
+registers instead of 8. Then we change I6 to use R8 as its destination. What happens in
+the cycles starting at cycle 6?
+
+Cycle 6: I6 and I7 are issued
+Cycle 7: I4 is retired
+Cycle 8: I5, I6, and I7 are retired
+Cycle 9: I8 is issued
+Cycle 11: I8 is retired
+
+33. Normally, dependences cause trouble with pipelined CPUs. Are there any optimiza-
+tions that can be done with WAW dependences that might actually improve matters?
+What?
+
+A WAW dependence occurs when a register that is being written is overwritten before the 
+first one is through. If there are no intervening reads of the register and no side effects, 
+the first operation is wasted, so it could be removed, aborted early, or have its result overwritten.
