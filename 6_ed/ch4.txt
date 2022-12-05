@@ -235,10 +235,10 @@ included.
 (0,2)---→(1,2)---→(2,2)---→(3,2)-------| |-----(a's ad)
   ↓        ↓        ↓                  ↓ ↓        ↑
 (0,3)---→(1,3)---→(2,3)-------------→(deuce)------|
-  ↓        ↓        ↓                  ↑ ↑        ↓
-(b w)←---------------------------------| |-----(b's ad)
-   ↑                                              |
-   |----------------------------------------------|
+  ↓        |        |                   ↑         ↓
+(b w)←---------------                   |-----(b's ad)
+  ↑                                               |
+  |-----------------------------------------------|
 
 19. Reconsider the previous problem. Are there any states that could be collapsed without
 changing the result of any game? If so, which ones are equivalent?
@@ -252,8 +252,9 @@ It should change only predictions after three consecutive mispredictions.
                            __________________________________________
                           |                                          ↓ 
 (000)------>(001)------>(011)          (100)<-------(110)<---------(111)
-  ↑___________|___________|              |____________|______________↑
-  |______________________________________|
+  ↑___________|___________|             | |___________|______________↑
+  |_____________________________________|
+
 
 21. The shift register of Fig. 4-27 has a maximum capacity of 6 bytes. Could a cheaper
 version of the IFU be built with a 5-byte shift register? How about a 4-byte one?
